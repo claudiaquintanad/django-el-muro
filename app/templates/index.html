@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block titulo %}El Muro{% endblock %} {% comment %}recuerda poner aquí el nombre de tu proyecto{% endcomment %}
+
+{% block contenido %}
+<h1>Bienvenid@: {{request.session.usuario.first_name}}</h1> 
+<a href="/logout">SALIR DEL SISTEMA</a>
+<form class='row' method="post" action="/postmessage">
+    {% csrf_token %} {% comment %}en cada form debes poner el token{% endcomment %}
+    <h3>Post a message</h3>
+    <textarea name="mensaje" class="d-block"></textarea> {% comment %}el name debe ser igual al nombre entre comillas que puse en views en la línea 27, OJO, no es necesario id {% endcomment%}
+    <button type="submit" class="mt-2 btn-info" id="mensaje">Post a Message</button> {% comment %}poner aquí también el id que pusimos en el views 27{% endcomment %}
+</form>
+
+<h4>Messages</h4> 
+{% for m in mens %} {% comment %}el mens es el nombreque le puse en el contexto de muro, véase línea 10 de views{% endcomment %}
+<div>
+    <div>
+        <p class='d-inline-block'>{{m.user_id.first_name}} {{m.user_id.last_name}}- {{m.created_at |date:"d F Y H:i" }}: {{m.message}} </p> {% comment %}message es el que tenemos en el model que corresponde al contenido del mensaje{% endcomment %}
+    </div>
+    <h5>Comments Section</h5>
+    {% for c in m.messages.all %} {% comment %}messages corresponde al related_name que le puse a la relación del comentario con el mensaje, véase en models línea 76{% endcomment %}
+    <div>
+        <p>{{c.user_id.first_name}} {{c.user_id.last_name}} repply: {{c.comment}}</p>
+        {% if c.user_id.id == request.session.usuario.id %} {% comment %}se verifica para que sólo el usuario pueda eliminar sus propios mensajes y no lo de los demás{% endcomment %}
+        <a href="delete/{{c.id}}">Delete</a> 
+        {% endif %}
+    </div>
+    {% endfor %}
+    <div>
+        <h6>Post a Comment</h6>
+        <form method="post" action="/postcomment"> {% comment %} en el action siempre debes poner la ruta que luego, gracias a la url, nos lleva al def correspondiente {% endcomment %}
+            {% csrf_token %}
+            <textarea name="comentario" id="comentario"></textarea>
+            <input type="hidden" name='message_id' value="{{m.id}}" class="d-block mt-2">
+            <button type="submit" class="d-block btn btn-info btn-sm" id="comentario">Post a Comment</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block libreria %}
+{% endblock %}
+
+
